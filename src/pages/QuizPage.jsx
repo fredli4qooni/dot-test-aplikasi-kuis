@@ -18,7 +18,7 @@
  * ================================================================
  */
 
-import { useState, useEffect} from 'react';
+import { useState, useEffect, useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchQuizQuestions } from '../api/quizService';
 
@@ -35,32 +35,42 @@ const QuizPage = () => {
   const [error, setError] = useState(null);
   const [isQuizFinished, setIsQuizFinished] = useState(false);
 
+  const effectRan = useRef(false);
+
   useEffect(() => {
-    const loadQuiz = async () => {
-      setIsLoading(true);
-      try {
-        const savedSession = localStorage.getItem('quizSession');
-        if (savedSession) {
-          const { questions, currentIndex, answers, timeLeft } = JSON.parse(savedSession);
-          setQuestions(questions);
-          setCurrentQuestionIndex(currentIndex);
-          setUserAnswers(answers);
-          setTimer(timeLeft);
-        } else {
-          const fetchedQuestions = await fetchQuizQuestions(10, 'multiple');
-          if (fetchedQuestions.length === 0) {
-            throw new Error("Gagal memuat soal. Silakan coba lagi.");
+    if (effectRan.current === true || !import.meta.env.DEV) {
+      const loadQuiz = async () => {
+        setIsLoading(true);
+        try {
+          const savedSession = localStorage.getItem('quizSession');
+          if (savedSession) {
+            const { questions, currentIndex, answers, timeLeft } = JSON.parse(savedSession);
+            setQuestions(questions);
+            setCurrentQuestionIndex(currentIndex);
+            setUserAnswers(answers);
+            setTimer(timeLeft);
+          } else {
+            const fetchedQuestions = await fetchQuizQuestions(10, 'multiple');
+            if (fetchedQuestions.length === 0) {
+              throw new Error("Gagal memuat soal. Silakan coba lagi.");
+            }
+            setQuestions(fetchedQuestions);
           }
-          setQuestions(fetchedQuestions);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
+      };
+
+      loadQuiz();
+    }
+
+    return () => {
+      effectRan.current = true;
     };
-    loadQuiz();
   }, []);
+
 
   useEffect(() => {
     if (isLoading || isQuizFinished) return;
