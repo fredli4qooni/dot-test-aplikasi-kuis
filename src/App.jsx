@@ -1,11 +1,20 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import QuizPage from './pages/QuizPage';
+import ResultPage from './pages/ResultPage';
+
 function App() {
   return (
-    <div className="bg-slate-900 min-h-screen flex justify-center items-center">
-      <h1 className="text-4xl font-bold text-white">
-        Project Kuis Siap Dimulai!
-      </h1>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+
+        <Route path="/quiz" element={<QuizPage />} />
+
+        <Route path="/results" element={<ResultPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
